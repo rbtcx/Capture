@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
+import subprocess
+import os
 
 def submit():
     file_name = file_name_entry.get()
@@ -14,8 +16,20 @@ def submit():
         # 确保时间格式正确
         if (0 <= start_hour < 24 and 0 <= start_minute < 60 and 0 <= start_second < 60 and
             0 <= end_hour < 24 and 0 <= end_minute < 60 and 0 <= end_second < 60):
-            result_message = f"文件名: {file_name}\n开始时间: {start_time}\n结束时间: {end_time}"
-            messagebox.showinfo("输入信息", result_message)
+            
+            # 构建ffmpeg命令
+            input_file = f"{file_name}.mp4"
+            output_file = f"{file_name}-cap.mp4"
+            ffmpeg_command = (
+                f"D:\\ffmpeg\\ffmpeg.exe -i {input_file} -q 0 -ss {start_time} -to {end_time} {output_file}"
+            )
+            
+            # 执行ffmpeg命令
+            try:
+                subprocess.run(ffmpeg_command, shell=True, check=True)
+                messagebox.showinfo("成功", f"视频裁剪完成: {output_file}")
+            except subprocess.CalledProcessError as e:
+                messagebox.showerror("错误", f"ffmpeg命令执行失败: {e}")
         else:
             raise ValueError
     except ValueError:
@@ -23,10 +37,10 @@ def submit():
 
 # 创建主窗口
 root = tk.Tk()
-root.title("时间输入程序")
+root.title("视频裁剪程序")
 
 # 文件名输入框
-tk.Label(root, text="文件名:").grid(row=0, column=0, padx=10, pady=5)
+tk.Label(root, text="文件名 (不包括扩展名):").grid(row=0, column=0, padx=10, pady=5)
 file_name_entry = tk.Entry(root)
 file_name_entry.grid(row=0, column=1, padx=10, pady=5)
 
